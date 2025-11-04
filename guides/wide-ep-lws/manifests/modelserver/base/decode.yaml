@@ -9,6 +9,7 @@ metadata:
 spec:
   replicas: 1
   leaderWorkerTemplate:
+    restartPolicy: None
     size: 2
     workerTemplate:
       metadata:

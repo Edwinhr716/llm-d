@@ -197,3 +197,7 @@ kubectl delete -k ./manifests/gateway/<gke-l7-regional-external-managed|istio|kg
 ## Customization
 
 For information on customizing a guide and tips to build your own, see [our docs](../../docs/customizing-a-guide.md)
+
+## Topology Aware Scheduling (TAS)
+
+For information on how to use topology aware scheduling using Kueue, see [LWS + TAS user guide](https://lws.sigs.k8s.io/docs/examples/tas/). The GKE example already has the required labels.

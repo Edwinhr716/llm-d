@@ -22,8 +22,8 @@ decode:
   replicas: 2
   extraConfig:
     nodeSelector:
-      cloud.google.com/gke-tpu-topology: "2x4"
-      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
+      cloud.google.com/gke-tpu-topology: "2x2x1"
+      cloud.google.com/gke-tpu-accelerator: "tpu7x"
   monitoring:
     podmonitor:
       enabled: true

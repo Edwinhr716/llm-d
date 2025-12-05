@@ -5,10 +5,10 @@ accelerator:
   type: google
 
 modelArtifacts:
-  uri: "hf://meta-llama/Llama-3.3-70B-Instruct"
-  size: 200Gi
+  uri: "hf://Qwen/Qwen3-32B"
+  size: 300Gi
   authSecretName: "llm-d-hf-token"
-  name: "meta-llama/Llama-3.3-70B-Instruct"
+  name: "Qwen/Qwen3-32B"
 
 routing:
   servicePort: 8000
@@ -19,13 +19,13 @@ routing:
 
 decode:
   parallelism:
-    tensor: 8
+    tensor: 4
   create: true
   replicas: 1
   extraConfig:
     nodeSelector:
-      cloud.google.com/gke-tpu-topology: "2x4"
-      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
+      cloud.google.com/gke-tpu-topology: "2x2x1"
+      cloud.google.com/gke-tpu-accelerator: "tpu7x"
   monitoring:
     podmonitor:
       enabled: true
@@ -34,7 +34,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: vllm/vllm-tpu:v0.11.1
+    image: us-central1-docker.pkg.dev/cloud-tpu-inference-test/jun-vllm-tpu/tpu-inference:jun-12-02-v7x
     modelCommand: vllmServe
     args:
       # Keep tensor-parallelism as the first set of arguments
@@ -63,11 +63,11 @@ decode:
       limits:
         memory: 64Gi
         cpu: "16"
-        # note: TPU resources get controlled by parallelism + accelerators above
+        google.com/tpu: 4
       requests:
         memory: 64Gi
         cpu: "16"
-        # note: TPU resources get controlled by parallelism + accelerators above
+        google.com/tpu: 4
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume
@@ -110,13 +110,13 @@ decode:
 
 prefill:
   parallelism:
-    tensor: 8
+    tensor: 4
   create: true
-  replicas: 2
+  replicas: 1
   extraConfig:
     nodeSelector:
-      cloud.google.com/gke-tpu-topology: "2x4"
-      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
+      cloud.google.com/gke-tpu-topology: "2x2x1"
+      cloud.google.com/gke-tpu-accelerator: "tpu7x"
   monitoring:
     podmonitor:
       enabled: true
@@ -125,7 +125,7 @@ prefill:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: vllm/vllm-tpu:v0.11.1
+    image: us-central1-docker.pkg.dev/cloud-tpu-inference-test/jun-vllm-tpu/tpu-inference:jun-12-02-v7x
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
@@ -153,11 +153,11 @@ prefill:
       limits:
         memory: 64Gi
         cpu: "16"
-        # note: TPU resources get controlled by parallelism + accelerators above
+        google.com/tpu: 4
       requests:
         memory: 64Gi
         cpu: "16"
-       # note: TPU resources get controlled by parallelism + accelerators above
+        google.com/tpu: 4
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume

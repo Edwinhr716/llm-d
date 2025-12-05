@@ -2,13 +2,10 @@
 multinode: false
 
 modelArtifacts:
-  uri: "hf://meta-llama/Llama-3.1-70B-Instruct"
-  size: 160Gi
+  uri: "hf://Qwen/Qwen3-32B"
+  size: 300Gi
   authSecretName: "llm-d-hf-token"
-  name: meta-llama/Llama-3.1-70B
-
-accelerator:
-  type: google
+  name: Qwen/Qwen3-32B
 
 routing:
   servicePort: 8000
@@ -17,9 +14,12 @@ routing:
     connector: nixlv2
     secure: false
 
+accelerator:
+  type: "google"
+
 decode:
   parallelism:
-    tensor: 8
+    tensor: 4
   create: true
   replicas: 2
   extraConfig:
@@ -34,7 +34,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "vllm/vllm-tpu:e92694b6fe264a85371317295bca6643508034ef"
+    image: "vllm/vllm-tpu:nightly-ironwood-20251130-eb90df0-2afcec4"
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size=8"

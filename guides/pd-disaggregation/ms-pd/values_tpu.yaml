@@ -34,7 +34,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: us-central1-docker.pkg.dev/cloud-tpu-inference-test/jun-vllm-tpu/tpu-inference:jun-12-02-v7x
+    image: vllm/vllm-tpu:nightly-ironwood-20251208-fd9df8a-bcb6f59
     modelCommand: vllmServe
     args:
       # Keep tensor-parallelism as the first set of arguments
@@ -125,7 +125,7 @@ prefill:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: us-central1-docker.pkg.dev/cloud-tpu-inference-test/jun-vllm-tpu/tpu-inference:jun-12-02-v7x
+    image: vllm/vllm-tpu:nightly-ironwood-20251208-fd9df8a-bcb6f59
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"

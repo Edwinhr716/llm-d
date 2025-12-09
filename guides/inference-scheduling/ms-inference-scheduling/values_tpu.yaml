@@ -2,10 +2,10 @@
 multinode: false
 
 modelArtifacts:
-  uri: "hf://Qwen/Qwen3-32B"
+  uri: "hf://unsloth/gpt-oss-120b-BF16"
   size: 300Gi
   authSecretName: "llm-d-hf-token"
-  name: Qwen/Qwen3-32B
+  name: unsloth/gpt-oss-120b-BF16
 
 routing:
   proxy:
@@ -32,7 +32,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "vllm/vllm-tpu:nightly-ironwood-20251130-eb90df0-2afcec4"
+    image: "vllm/vllm-tpu:nightly-ironwood-20251208-fd9df8a-bcb6f59"
     modelCommand: vllmServe
     args:
       - "--max-model-len=4096"

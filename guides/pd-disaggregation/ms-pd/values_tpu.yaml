@@ -5,10 +5,10 @@ accelerator:
   type: google
 
 modelArtifacts:
-  uri: "hf://Qwen/Qwen3-32B"
+  uri: "hf://unsloth/gpt-oss-120b-BF16"
   size: 300Gi
   authSecretName: "llm-d-hf-token"
-  name: "Qwen/Qwen3-32B"
+  name: "unsloth/gpt-oss-120b-BF16"
 
 routing:
   servicePort: 8000

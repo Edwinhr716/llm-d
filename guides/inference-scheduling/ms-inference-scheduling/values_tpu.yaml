@@ -2,10 +2,10 @@
 multinode: false
 
 modelArtifacts:
-  uri: "hf://unsloth/gpt-oss-120b-BF16"
+  uri: "hf://BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
   size: 300Gi
   authSecretName: "llm-d-hf-token"
-  name: unsloth/gpt-oss-120b-BF16
+  name: BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic
 
 routing:
   proxy:
@@ -35,9 +35,15 @@ decode:
     image: "vllm/vllm-tpu:v0.13.2-ironwood"
     modelCommand: vllmServe
     args:
-      - --disable-log-requests
-      - --gpu-memory-utilization=.90
-      - --tensor-parallel-size=8
+        - --tensor-parallel-size=8
+        - --data-parallel-size=1
+        - --max-model-len=9216
+        - --max-num-batched-tokens=1028
+        - --max-num-seqs=128
+        - --no-enable-prefix-caching
+        - --kv-cache-dtype=fp8
+        - --async-scheduling
+        - --gpu-memory-utilization=0.93
     ports:
       - containerPort: 8000
         name: vllm

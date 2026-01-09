@@ -5,10 +5,10 @@ accelerator:
   type: google
 
 modelArtifacts:
-  uri: "hf://unsloth/gpt-oss-120b-BF16"
-  size: 300Gi
+  uri: "hf://meta-llama/Llama-3.3-70B-Instruct"
+  size: 200Gi
   authSecretName: "llm-d-hf-token"
-  name: "unsloth/gpt-oss-120b-BF16"
+  name: "meta-llama/Llama-3.3-70B-Instruct"
 
 routing:
   servicePort: 8000
@@ -19,13 +19,13 @@ routing:
 
 decode:
   parallelism:
-    tensor: 4
+    tensor: 8
   create: true
   replicas: 1
   extraConfig:
     nodeSelector:
-      cloud.google.com/gke-tpu-topology: "2x2x1"
-      cloud.google.com/gke-tpu-accelerator: "tpu7x"
+      cloud.google.com/gke-tpu-topology: "2x4"
+      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
   monitoring:
     podmonitor:
       enabled: true
@@ -34,7 +34,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: vllm/vllm-tpu:nightly-ironwood-20251208-fd9df8a-bcb6f59
+    image: vllm/vllm-tpu:v0.11.1
     modelCommand: vllmServe
     args:
       # Keep tensor-parallelism as the first set of arguments
@@ -63,11 +63,11 @@ decode:
       limits:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 4
+        google.com/tpu: 8
       requests:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 4
+        google.com/tpu: 8
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume
@@ -110,13 +110,13 @@ decode:
 
 prefill:
   parallelism:
-    tensor: 4
+    tensor: 8
   create: true
-  replicas: 1
+  replicas: 2
   extraConfig:
     nodeSelector:
-      cloud.google.com/gke-tpu-topology: "2x2x1"
-      cloud.google.com/gke-tpu-accelerator: "tpu7x"
+      cloud.google.com/gke-tpu-topology: "2x4"
+      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
   monitoring:
     podmonitor:
       enabled: true
@@ -125,7 +125,7 @@ prefill:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: vllm/vllm-tpu:nightly-ironwood-20251208-fd9df8a-bcb6f59
+    image: vllm/vllm-tpu:v0.11.1
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
@@ -153,11 +153,11 @@ prefill:
       limits:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 4
+        google.com/tpu: 8
       requests:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 4
+        google.com/tpu: 8
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume

@@ -9,6 +9,7 @@ metadata:
 spec:
   replicas: 1
   leaderWorkerTemplate:
+    restartPolicy: None
     size: 2
     workerTemplate:
       metadata:
@@ -168,7 +169,7 @@ spec:
             name: vllm
             protocol: TCP
           - containerPort: 5557
-            name: vllm
+            name: nixl
             protocol: TCP
           startupProbe:
             httpGet:

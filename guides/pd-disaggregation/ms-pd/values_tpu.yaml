@@ -63,11 +63,11 @@ decode:
       limits:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 8
+         # note: TPU resources get controlled by parallelism + accelerators above
       requests:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 8
+         # note: TPU resources get controlled by parallelism + accelerators above
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume
@@ -153,11 +153,11 @@ prefill:
       limits:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 8
+         # note: TPU resources get controlled by parallelism + accelerators above
       requests:
         memory: 64Gi
         cpu: "16"
-        google.com/tpu: 8
+         # note: TPU resources get controlled by parallelism + accelerators above
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume

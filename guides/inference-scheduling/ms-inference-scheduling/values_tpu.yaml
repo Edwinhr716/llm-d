@@ -2,10 +2,10 @@
 multinode: false
 
 modelArtifacts:
-  uri: "hf://BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
+  uri: "hf://Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"
   size: 700Gi
   authSecretName: "llm-d-hf-token"
-  name: BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic
+  name: Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8
 
 routing:
   proxy:
@@ -17,7 +17,7 @@ accelerator:
 
 decode:
   parallelism:
-    tensor: 4
+    tensor: 8
   create: true
   replicas: 2
   extraConfig:
@@ -32,15 +32,13 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "vllm/vllm-tpu:v0.13.2-ironwood"
+    image: "vllm/vllm-tpu:nightly-ironwood-20260113-8424c78-df7e127"
     modelCommand: vllmServe
     args:
-        - --tensor-parallel-size=8
         - --data-parallel-size=1
         - --max-model-len=9216
         - --max-num-batched-tokens=1028
         - --max-num-seqs=128
-        - --no-enable-prefix-caching
         - --kv-cache-dtype=fp8
         - --async-scheduling
         - --gpu-memory-utilization=0.93
@@ -48,6 +46,15 @@ decode:
       - containerPort: 8000
         name: vllm
         protocol: TCP
+    resources:
+      limits:
+        memory: 64Gi
+        cpu: "16"
+        google.com/tpu: 4
+      requests:
+        memory: 64Gi
+        cpu: "16"
+        google.com/tpu: 4
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume

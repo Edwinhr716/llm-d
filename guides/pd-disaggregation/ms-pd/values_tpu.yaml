@@ -157,7 +157,7 @@ prefill:
       requests:
         memory: 64Gi
         cpu: "16"
-        # note: TPU resources get controlled by parallelism + accelerators above
+       # note: TPU resources get controlled by parallelism + accelerators above
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume

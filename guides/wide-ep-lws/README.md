@@ -26,6 +26,7 @@ This guide requires 32 Nvidia H200 or B200 GPUs and InfiniBand or RoCE RDMA netw
   * You must have high speed inter-accelerator networking
   * The pods leveraging inter-node EP must be deployed within the same networking domain
   * You have deployed the [LeaderWorkerSet optional controller](../prereq/infrastructure/README.md#optional-install-leaderworkerset-for-multi-host-inference)
+  * Optionally, you have deployed [Kueue and the Kueue Populator](../prereq/infrastructure/README.md#optional-install-kueue-and-kueue-populator-for-topology-aware-scheduling-(tas)-for-multi-host-inference)
 * Configure and deploy your [Gateway control plane](../prereq/gateway-provider/README.md).
 * Have the [Monitoring stack](../../docs/monitoring/README.md) installed on your system.
 * Create a namespace for installation.

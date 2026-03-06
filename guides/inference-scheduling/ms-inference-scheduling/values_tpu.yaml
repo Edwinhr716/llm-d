@@ -19,7 +19,7 @@ decode:
   parallelism:
     tensor: 8
   create: true
-  replicas: 2
+  replicas: 4
   extraConfig:
     nodeSelector:
       cloud.google.com/gke-tpu-topology: "2x4"

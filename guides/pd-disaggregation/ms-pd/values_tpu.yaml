@@ -13,10 +13,10 @@ accelerator:
   type: google
 
 modelArtifacts:
-  uri: "hf://meta-llama/Llama-3.3-70B-Instruct"
-  size: 200Gi
+  uri: "hf://BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
+  size: 800Gi
   authSecretName: "llm-d-hf-token"
-  name: "meta-llama/Llama-3.3-70B-Instruct"
+  name: "BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
   labels:
     llm-d.ai/inference-serving: "true"
     llm-d.ai/guide: "pd-disaggregation"
@@ -35,11 +35,11 @@ decode:
   parallelism:
     tensor: 8
   create: true
-  replicas: 1
+  replicas: 3
   extraConfig:
     nodeSelector:
-      cloud.google.com/gke-tpu-topology: "2x4"
-      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
+      cloud.google.com/gke-tpu-topology: "2x2x1"
+      cloud.google.com/gke-tpu-accelerator: "tpu7x"
   monitoring:
     podmonitor:
       enabled: true
@@ -48,17 +48,23 @@ decode:
       interval: "30s"
   containers:
     - name: "vllm"
-      image: vllm/vllm-tpu:v0.13.2-ironwood
+      image: vllm/vllm-tpu:nightly-ironwood-20260204-1981c89-010ec0c
       modelCommand: vllmServe
       args:
         # Keep tensor-parallelism as the first set of arguments
         - "--tensor-parallel-size"
         - "8"
         - "--kv-transfer-config"
-        - '{"kv_connector":"TPUConnector", "kv_connector_module_path" : "tpu_inference.distributed.tpu_connector", "kv_role":"kv_both", "kv_ip" : "$(POD_IP)"}'
+        - '{"kv_connector":"TPUConnector", "kv_connector_module_path" : "tpu_inference.distributed.tpu_connector", "kv_role":"kv_consumer", "kv_ip" : "$(POD_IP)"}'
         - "--disable-uvicorn-access-log"
-        - "--max-model-len"
-        - "32000"
+        - "--max-model-len=10240"
+        - "--max-num-batched-tokens=8192"
+        - "--max-num-seqs=512"
+        - "--enable-expert-parallel"
+        - "--kv-cache-dtype=fp8"
+        - "--no-async-scheduling"
+        - "--no-enable-prefix-caching"
+        - "--gpu-memory-utilization=0.95"
       env:
         - name: POD_IP
           valueFrom:
@@ -68,6 +74,8 @@ decode:
           value: "9600" # default for TPU
         - name: TPU_KV_TRANSFER_PORT # Port where the KV transfer actually happens
           value: "9100" # default for TPU
+        - name: MODEL_IMPL_TYPE
+          value: "vllm"
       ports:
         - containerPort: 8000
           name: vllm
@@ -76,17 +84,17 @@ decode:
           name: tpu-kv-transfer
           protocol: TCP
         - containerPort: 9600
-          name: tpu-pd-coordination
+          name: tpu-pd
           protocol: TCP
       resources:
         limits:
           memory: 64Gi
           cpu: "16"
-          # note: TPU resources get controlled by parallelism + accelerators above
+          google.com/tpu: 4
         requests:
           memory: 64Gi
           cpu: "16"
-          # note: TPU resources get controlled by parallelism + accelerators above
+          google.com/tpu: 4
       mountModelVolume: true
       volumeMounts:
         - name: metrics-volume
@@ -131,11 +139,11 @@ prefill:
   parallelism:
     tensor: 8
   create: true
-  replicas: 2
+  replicas: 1
   extraConfig:
     nodeSelector:
-      cloud.google.com/gke-tpu-topology: "2x4"
-      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
+      cloud.google.com/gke-tpu-topology: "2x2x1"
+      cloud.google.com/gke-tpu-accelerator: "tpu7x"
   monitoring:
     podmonitor:
       enabled: true
@@ -144,7 +152,7 @@ prefill:
       interval: "30s"
   containers:
     - name: "vllm"
-      image: vllm/vllm-tpu:v0.13.2
+      image: vllm/vllm-tpu:nightly-ironwood-20260204-1981c89-010ec0c
       modelCommand: vllmServe
       args:
         - "--tensor-parallel-size"
@@ -152,8 +160,14 @@ prefill:
         - "--kv-transfer-config"
         - '{"kv_connector":"TPUConnector", "kv_connector_module_path" : "tpu_inference.distributed.tpu_connector", "kv_role":"kv_producer", "kv_ip" : "$(POD_IP)"}'
         - "--disable-uvicorn-access-log"
-        - "--max-model-len"
-        - "32000"
+        - "--max-model-len=10240"
+        - "--max-num-batched-tokens=8192"
+        - "--max-num-seqs=512"
+        - "--enable-expert-parallel"
+        - "--kv-cache-dtype=fp8"
+        - "--no-async-scheduling"
+        - "--no-enable-prefix-caching"
+        - "--gpu-memory-utilization=0.95"
       env:
         - name: POD_IP
           valueFrom:
@@ -163,6 +177,8 @@ prefill:
           value: "9600" # default for TPU
         - name: TPU_KV_TRANSFER_PORT # Port where the KV transfer actually happens
           value: "9100" # default for TPU
+        - name: MODEL_IMPL_TYPE
+          value: "vllm"
       ports:
         - containerPort: 8000
           name: vllm
@@ -171,17 +187,17 @@ prefill:
           name: tpu-kv-transfer
           protocol: TCP
         - containerPort: 9600
-          name: tpu-pd-coordination
+          name: tpu-pd
           protocol: TCP
       resources:
         limits:
           memory: 64Gi
           cpu: "16"
-          # note: TPU resources get controlled by parallelism + accelerators above
+          google.com/tpu: 4
         requests:
           memory: 64Gi
           cpu: "16"
-          # note: TPU resources get controlled by parallelism + accelerators above
+          google.com/tpu: 4
       mountModelVolume: true
       volumeMounts:
         - name: metrics-volume

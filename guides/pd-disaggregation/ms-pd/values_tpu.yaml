@@ -14,7 +14,7 @@ accelerator:
 
 modelArtifacts:
   uri: "hf://BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
-  size: 800Gi
+  size: 10Gi
   authSecretName: "llm-d-hf-token"
   name: "BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
   labels:
@@ -40,6 +40,7 @@ decode:
     nodeSelector:
       cloud.google.com/gke-tpu-topology: "2x2x1"
       cloud.google.com/gke-tpu-accelerator: "tpu7x"
+    
   monitoring:
     podmonitor:
       enabled: true
@@ -55,7 +56,7 @@ decode:
         - "--tensor-parallel-size"
         - "8"
         - "--kv-transfer-config"
-        - '{"kv_connector":"TPUConnector", "kv_connector_module_path" : "tpu_inference.distributed.tpu_connector", "kv_role":"kv_consumer", "kv_ip" : "$(POD_IP)"}'
+        - '{"kv_connector":"TPUConnector", "kv_connector_module_path" : "tpu_inference.distributed.tpu_connector", "kv_role":"kv_consumer"}'
         - "--disable-uvicorn-access-log"
         - "--max-model-len=10240"
         - "--max-num-batched-tokens=8192"
@@ -66,7 +67,7 @@ decode:
         - "--no-enable-prefix-caching"
         - "--gpu-memory-utilization=0.95"
       env:
-        - name: POD_IP
+        - name: VLLM_HOST_IP
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
@@ -76,8 +77,16 @@ decode:
           value: "9100" # default for TPU
         - name: MODEL_IMPL_TYPE
           value: "vllm"
+        - name: USE_MOE_EP_KERNEL
+          value: "1"
+        - name: JAX_PLATFORMS
+          value: "tpu,cpu"
+        - name: TPU_BACKEND_TYPE
+          value: jax
+        - name: PJRT_DEVICE
+          value: TPU
       ports:
-        - containerPort: 8000
+        - containerPort: 8200
           name: vllm
           protocol: TCP
         - containerPort: 9100
@@ -88,52 +97,17 @@ decode:
           protocol: TCP
       resources:
         limits:
-          memory: 64Gi
-          cpu: "16"
           google.com/tpu: 4
         requests:
-          memory: 64Gi
-          cpu: "16"
           google.com/tpu: 4
-      mountModelVolume: true
       volumeMounts:
-        - name: metrics-volume
-          mountPath: /.config
         - name: shm
           mountPath: /dev/shm
-        - name: torch-compile-cache
-          mountPath: /.cache
-      startupProbe:
-        httpGet:
-          path: /health
-          port: vllm
-        initialDelaySeconds: 15
-        periodSeconds: 30
-        timeoutSeconds: 5
-        failureThreshold: 120
-      livenessProbe:
-        httpGet:
-          path: /health
-          port: vllm
-        periodSeconds: 10
-        timeoutSeconds: 5
-        failureThreshold: 3
-      readinessProbe:
-        httpGet:
-          path: /v1/models
-          port: vllm
-        periodSeconds: 5
-        timeoutSeconds: 2
-        failureThreshold: 3
   volumes:
-    - name: metrics-volume
-      emptyDir: {}
     - name: shm
       emptyDir:
         medium: Memory
         sizeLimit: "16Gi"
-    - name: torch-compile-cache
-      emptyDir: {}
 
 prefill:
   parallelism:
@@ -158,7 +132,7 @@ prefill:
         - "--tensor-parallel-size"
         - "8"
         - "--kv-transfer-config"
-        - '{"kv_connector":"TPUConnector", "kv_connector_module_path" : "tpu_inference.distributed.tpu_connector", "kv_role":"kv_producer", "kv_ip" : "$(POD_IP)"}'
+        - '{"kv_connector":"TPUConnector", "kv_connector_module_path" : "tpu_inference.distributed.tpu_connector", "kv_role":"kv_producer"}'
         - "--disable-uvicorn-access-log"
         - "--max-model-len=10240"
         - "--max-num-batched-tokens=8192"
@@ -167,9 +141,9 @@ prefill:
         - "--kv-cache-dtype=fp8"
         - "--no-async-scheduling"
         - "--no-enable-prefix-caching"
-        - "--gpu-memory-utilization=0.95"
+        - "--gpu-memory-utilization=0.85"
       env:
-        - name: POD_IP
+        - name: VLLM_HOST_IP
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
@@ -179,6 +153,14 @@ prefill:
           value: "9100" # default for TPU
         - name: MODEL_IMPL_TYPE
           value: "vllm"
+        - name: USE_MOE_EP_KERNEL
+          value: "1"
+        - name: JAX_PLATFORMS
+          value: "tpu,cpu"
+        - name: TPU_BACKEND_TYPE
+          value: jax
+        - name: PJRT_DEVICE
+          value: TPU
       ports:
         - containerPort: 8000
           name: vllm
@@ -191,49 +173,14 @@ prefill:
           protocol: TCP
       resources:
         limits:
-          memory: 64Gi
-          cpu: "16"
           google.com/tpu: 4
         requests:
-          memory: 64Gi
-          cpu: "16"
           google.com/tpu: 4
-      mountModelVolume: true
       volumeMounts:
-        - name: metrics-volume
-          mountPath: /.config
         - name: shm
           mountPath: /dev/shm
-        - name: torch-compile-cache
-          mountPath: /.cache
-      startupProbe:
-        httpGet:
-          path: /health
-          port: vllm
-        initialDelaySeconds: 15
-        periodSeconds: 30
-        timeoutSeconds: 5
-        failureThreshold: 120
-      livenessProbe:
-        httpGet:
-          path: /health
-          port: vllm
-        periodSeconds: 10
-        timeoutSeconds: 5
-        failureThreshold: 3
-      readinessProbe:
-        httpGet:
-          path: /v1/models
-          port: vllm
-        periodSeconds: 5
-        timeoutSeconds: 2
-        failureThreshold: 3
   volumes:
-    - name: metrics-volume
-      emptyDir: {}
     - name: shm
       emptyDir:
         medium: Memory
         sizeLimit: "16Gi"
-    - name: torch-compile-cache
-      emptyDir: {}

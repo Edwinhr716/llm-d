@@ -1,0 +1,18 @@
+# Source: inferencepool/templates/gke.yaml
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: gaie-pd
+  namespace: llm-d-pd
+  labels:
+    app.kubernetes.io/name: gaie-pd-epp
+    app.kubernetes.io/version: v1.3.1
+spec:
+  targetRef:
+    group: "inference.networking.k8s.io"
+    kind: InferencePool
+    name: gaie-pd
+  default:
+    timeoutSec: 1200    # 5-minute timeout (adjust as needed)
+    logging:
+      enabled: true    # log all requests by default

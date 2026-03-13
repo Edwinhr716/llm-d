@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: llm-d-inference-gateway
+  name: infra-pd-inference-gateway
 spec:
   listeners:
     - port: 80

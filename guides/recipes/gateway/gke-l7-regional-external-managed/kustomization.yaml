@@ -5,14 +5,14 @@ resources:
 patches:
   - target:
       kind: Gateway
-      name: llm-d-inference-gateway
+      name: infra-pd-inference-gateway
     patch: |-
       - op: add
         path: /spec/gatewayClassName
         value: gke-l7-regional-external-managed
   - target:
       kind: HTTPRoute
-      name: llm-d-route
+      name: llm-d-pd-disaggregation
     patch: |-
       - op: remove
         path: /spec/rules/0/timeouts

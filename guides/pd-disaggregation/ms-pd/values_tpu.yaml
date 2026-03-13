@@ -13,10 +13,9 @@ accelerator:
   type: google
 
 modelArtifacts:
-  uri: "hf://BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
   size: 10Gi
   authSecretName: "llm-d-hf-token"
-  name: "BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
+  name: ""
   labels:
     llm-d.ai/inference-serving: "true"
     llm-d.ai/guide: "pd-disaggregation"
@@ -53,6 +52,8 @@ decode:
       modelCommand: vllmServe
       args:
         # Keep tensor-parallelism as the first set of arguments
+        - "--model=gs://qwen-for-gke-benchmarking/Bccard-Qwen3-Coder-480B-A35B-Instruct"
+        - "--served-model-name=BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
         - "--tensor-parallel-size"
         - "8"
         - "--kv-transfer-config"
@@ -66,6 +67,7 @@ decode:
         - "--no-async-scheduling"
         - "--no-enable-prefix-caching"
         - "--gpu-memory-utilization=0.95"
+        - "--load-format=runai_streamer"
       env:
         - name: VLLM_HOST_IP
           valueFrom:
@@ -129,6 +131,8 @@ prefill:
       image: vllm/vllm-tpu:nightly-ironwood-20260204-1981c89-010ec0c
       modelCommand: vllmServe
       args:
+        - "--model=gs://qwen-for-gke-benchmarking/Bccard-Qwen3-Coder-480B-A35B-Instruct"
+        - "--served-model-name=BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic"
         - "--tensor-parallel-size"
         - "8"
         - "--kv-transfer-config"
@@ -141,7 +145,8 @@ prefill:
         - "--kv-cache-dtype=fp8"
         - "--no-async-scheduling"
         - "--no-enable-prefix-caching"
-        - "--gpu-memory-utilization=0.85"
+        - "--gpu-memory-utilization=0.80"
+        - "--load-format=runai_streamer"
       env:
         - name: VLLM_HOST_IP
           valueFrom:

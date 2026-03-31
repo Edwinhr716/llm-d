@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: vllm-decode
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       llm-d.ai/guide: pd-disaggregation
@@ -43,10 +43,10 @@ spec:
         resources: {}
       containers:
       - name: vllm-tpu
-        image: vllm/vllm-tpu:nightly-ironwood-20260204-1981c89-010ec0c
+        image: vllm/vllm-tpu:nightly-20260323-990939c-c57d38d
         imagePullPolicy: Always
         command: [ "/bin/bash", "-c", "--" ]
-        args: ["vllm serve --seed=42 --port=8200 --model=gs://qwen-for-gke-benchmarking/Bccard-Qwen3-Coder-480B-A35B-Instruct --served-model-name=BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic --load-format=runai_streamer --max-model-len=10240 --max-num-batched-tokens=8192 --max-num-seqs=512 --no-enable-prefix-caching --disable-log-requests --tensor-parallel-size=8 --kv-cache-dtype=fp8 --gpu-memory-utilization=0.95 --async-scheduling --enable-expert-parallel --kv-transfer-config '{\"kv_connector\":\"TPUConnector\",\"kv_connector_module_path\":\"tpu_inference.distributed.tpu_connector\",\"kv_role\":\"kv_consumer\"}'"]
+        args: ["vllm serve --seed=42 --port=8200 --model=gs://qwen-for-gke-benchmarking/Bccard-Qwen3-Coder-480B-A35B-Instruct --served-model-name=BCCard/Qwen3-Coder-480B-A35B-Instruct-FP8-Dynamic --load-format=runai_streamer --max-model-len=10240 --max-num-batched-tokens=8192 --max-num-seqs=512 --no-enable-prefix-caching --tensor-parallel-size=8 --kv-cache-dtype=fp8 --gpu-memory-utilization=0.95 --async-scheduling --enable-expert-parallel --kv-transfer-config '{\"kv_connector\":\"TPUConnector\",\"kv_connector_module_path\":\"tpu_inference.distributed.tpu_connector\",\"kv_role\":\"kv_consumer\"}'"]
         #args: [ "while true; do sleep 300; done;" ]
         env:
         - name: VLLM_HOST_IP

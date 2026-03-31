@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-inference-scheduling
+  labels:
+    llm-d.ai/inference-serving: "true"
+    llm-d.ai/guide: "inference-scheduling"
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      llm-d.ai/inference-serving: "true"
+      llm-d.ai/guide: "inference-scheduling"
+  template:
+    metadata:
+      labels:
+        llm-d.ai/inference-serving: "true"
+        llm-d.ai/guide: "inference-scheduling"
+    spec:
+      serviceAccountName: vllm-sa
+      nodeSelector:
+        cloud.google.com/gke-tpu-topology: 2x2x1
+        cloud.google.com/gke-tpu-accelerator: tpu7x
+      containers:
+      - name: vllm
+        image: vllm/vllm-tpu:nightly
+        imagePullPolicy: Always
+        command: [ "/bin/bash", "-c", "--" ]
+        args: ["vllm serve --seed=42 --model=gs://vllm-tpu7x-gcsfuse-test/Qwen3-Coder-480B-A35B-Instruct-FP8 --served-model-name=Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8 --load-format=runai_streamer --max-model-len=10240 --max-num-batched-tokens=8192 --max-num-seqs=512 --tensor-parallel-size=8 --kv-cache-dtype=fp8 --gpu-memory-utilization=0.80 --async-scheduling --enable-expert-parallel --data-parallel-size=1 --block-size=256 --disable-log-requests"]
+        env:
+        - name: MODEL_IMPL_TYPE
+          value: vllm
+        - name: USE_BATCHED_RPA_KERNEL
+          value: "1"
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: HF_TOKEN
+              name: llm-d-hf-token
+        ports:
+        - containerPort: 8000
+          name: vllm
+          protocol: TCP
+        resources:
+          limits:
+            google.com/tpu: 4
+        volumeMounts:
+        - name: dshm
+          mountPath: /dev/shm
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory

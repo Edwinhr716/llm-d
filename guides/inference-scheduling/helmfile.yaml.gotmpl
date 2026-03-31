@@ -107,9 +107,7 @@ releases:
       {{- end }}
       - {{ printf "gaie-%s" $rn | quote }}
     values:
-    {{- if eq .Environment.Name "gke_tpu" }}
-      - ms-inference-scheduling/values_tpu.yaml
-    {{- else if eq .Environment.Name "amd" }}
+    {{- if eq .Environment.Name "amd" }}
       - ms-inference-scheduling/values_amd.yaml
     {{- else if eq .Environment.Name "xpu" }}
       - ms-inference-scheduling/values_xpu.yaml
@@ -121,8 +119,6 @@ releases:
       - ms-inference-scheduling/digitalocean-values.yaml
     {{- else if eq (env "INFERENCE_SERVER") "sglang" }}
       - ms-inference-scheduling/values_sglang.yaml
-    {{- else }}
-      - ms-inference-scheduling/values.yaml
     {{- end }}
     set:
     {{- if or (eq .Environment.Name "gke") (eq .Environment.Name "gke_tpu") }}

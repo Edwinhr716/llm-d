@@ -26,7 +26,7 @@ spec:
         image: vllm/vllm-tpu:nightly-20260403-350d385-d9408ff
         imagePullPolicy: Always
         command: [ "/bin/bash", "-c", "--" ]
-        args: ["vllm serve --seed=42 --model=gs://vllm-tpu7x-gcsfuse-test/Qwen3-Coder-480B-A35B-Instruct-FP8 --served-model-name=Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8 --load-format=runai_streamer --max-model-len=10240 --max-num-batched-tokens=8192 --max-num-seqs=512 --tensor-parallel-size=8 --kv-cache-dtype=fp8 --gpu-memory-utilization=0.80 --async-scheduling --enable-expert-parallel --data-parallel-size=1 --block-size=256"]
+        args: ["vllm serve --seed=42 --model=gs://vllm-tpu7x-gcsfuse-test/Qwen3-Coder-480B-A35B-Instruct-FP8 --served-model-name=Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8 --load-format=runai_streamer --max-model-len=40120 --max-num-batched-tokens=8192 --max-num-seqs=512 --tensor-parallel-size=8 --kv-cache-dtype=fp8 --gpu-memory-utilization=0.80 --async-scheduling --enable-expert-parallel --data-parallel-size=1 --block-size=256"]
         env:
         - name: MODEL_IMPL_TYPE
           value: vllm
